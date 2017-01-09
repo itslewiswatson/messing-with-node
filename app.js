@@ -5,6 +5,7 @@ var port 		= process.env.PORT || 3000;
 var router 		= express.Router();
 
 var User 		= require("./models/users");
+var Track 		= require("./models/tracks");
 
 // Allows us to pull data from POST requests
 // And allows us to use JSON in our response
@@ -12,6 +13,7 @@ var User 		= require("./models/users");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
+// Middleware for routes
 router.use(function(req, res, next) {
 	//console.log("Incoming connection");
 	next();
@@ -40,7 +42,36 @@ router.route("/users/:name")
 		res.json({message: "get " + req.params.name});
 	})
 
-app.use("/", router);
-app.listen(port);
+router.route("/tracks/:id")
+	.get(function(req, res) {
+		//console.log(req.params.id);
 
-console.log("Ready to accept API requests on port " + port);
+		var a = new Track();
+		console.log(a);
+
+		res.json(
+			{
+				"tracks": [
+					{
+						id: "3yhg3wqj5",
+						title: "Clarity",
+						description: "",
+						length: 3400,
+						artists: [
+							"Zedd",
+							"Foxes"
+						],
+						statistics: {
+							"playCount": 0,
+							"viewCount": 0,
+						},
+					},
+				]
+			}
+		);
+	});
+
+app.use("/", router);
+app.listen(port, function () {
+	console.log("Ready to accept API requests on port " + port);
+});
