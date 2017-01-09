@@ -1,18 +1,20 @@
 {
-  "name": "twenti.co",
-  "version": "0.0.1",
-  "main": "app.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "gitlab.com/nokizorque/twenti.co"
-  },
-  "author": "nokizorque",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "mongodb": "^2.2.19"
-  }
+	"name": "twenti.co",
+	"version": "0.0.2",
+	"main": "app.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "gitlab.com/nokizorque/twenti.co"
+	},
+	"author": "nokizorque",
+	"license": "ISC",
+	"description": "",
+	"dependencies": {
+		"mongodb": "^2.2.19",
+		"body-parser": "~1.0.1",
+		"express": "~4.0.0"
+	}
 }
