@@ -14,8 +14,6 @@
   "description": "",
   "dependencies": {
     "body-parser": "^1.0.2",
-    "express": "~4.0.0",
-    "mongodb": "^2.2.19",
-    "mongoose": "^4.7.6"
+    "express": "~4.0.0"
   }
 }
