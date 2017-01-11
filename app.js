@@ -6,10 +6,8 @@ var router 		= express.Router();
 
 var User 		= require("./models/users");
 var Track 		= require("./models/tracks");
+require("./models/mongo.js");
 
-// Allows us to pull data from POST requests
-// And allows us to use JSON in our response
-// Automatically adjusts our response headers to 'application/json'
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
@@ -44,11 +42,8 @@ router.route("/users/:name")
 
 router.route("/tracks/:id")
 	.get(function(req, res) {
-		//console.log(req.params.id);
-
-		var a = new Track();
-		console.log(a);
-
+		
+		/*
 		res.json(
 			{
 				"tracks": [
@@ -69,6 +64,22 @@ router.route("/tracks/:id")
 				]
 			}
 		);
+		*/
+
+		var u = new Track();
+		u.name = "CUNTS FUCKED";
+		u.save(function (err) {
+			console.log("FUCK NODE AND MONGODB");
+		});
+		console.log(u);
+		
+		
+		Track.findById("58737ede0b256465e8da89a8", function (err, obj) {
+			console.log("fuckk");
+			console.log(err == null);
+		});
+		
+		res.json({});
 	});
 
 app.use("/", router);
