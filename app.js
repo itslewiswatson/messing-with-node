@@ -1,12 +1,17 @@
+/*
+// Copyright (C) 2016 - 2017 Lewis Watson <noki@zorque.xyz>
+//
+// This file is part of Twenti
+//
+// Twenti can not be copied and/or distributed without the express
+// permission of Lewis Watson and/or Franco Paez
+*/
+
 var express		= require("express");
 var app 		= express();
 var bodyParser 	= require("body-parser");
 var port 		= process.env.PORT || 3000;
 var router 		= express.Router();
-
-var User 		= require("./models/users");
-var Track 		= require("./models/tracks");
-require("./models/mongo.js");
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
@@ -64,21 +69,7 @@ router.route("/tracks/:id")
 				]
 			}
 		);
-		*/
-
-		var u = new Track();
-		u.name = "CUNTS FUCKED";
-		u.save(function (err) {
-			console.log("FUCK NODE AND MONGODB");
-		});
-		console.log(u);
-		
-		
-		Track.findById("58737ede0b256465e8da89a8", function (err, obj) {
-			console.log("fuckk");
-			console.log(err == null);
-		});
-		
+		*/		
 		res.json({});
 	});
 
