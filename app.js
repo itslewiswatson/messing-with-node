@@ -13,6 +13,7 @@ var bodyParser		= require("body-parser");
 var port 			= process.env.PORT || 3000;
 var router			= express.Router();
 var randomString 	= require("randomstring");
+var db				= require("./models/postgre.js");
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
@@ -29,7 +30,13 @@ router.get("/", function (req, res) {
 
 router.route("/users")
 	.post(function(req, res) {
-		res.json({message: "post"});
+		res.json(
+			{
+				"response": {
+					"data": null
+				}
+			}
+		);
 	})
 	.get(function(req, res) {
 		res.json({message: "get"});
@@ -43,12 +50,44 @@ router.route("/users")
 
 router.route("/users/:name")
 	.get(function(req, res) {
-		res.json({message: "get " + req.params.name});
+		//res.json({message: "get " + req.params.name});
 	})
 
 router.route("/tracks/:id")
 	.get(function(req, res) {
-		res.json({});
+		var id = req.params.id;
+		db.one("select * from tracks where uniqueid = $1", id)
+			.then(function (data) {
+				// Idea
+					// Currently integer fields return as string in the json response
+					// Loop through all fields
+					// Check if parseInt(field) returns a number
+					// If it does, set the field's value to parseInt of it's value
+					/*
+						if (parseInt(field)) {
+							field = parseInt(field);
+						}
+					*/
+					// Should see if it's able to be made into a one-liner
+				// eg: data.uploaded = parseInt(data.uploaded);
+				res.status(200)
+					.json(
+						{
+							"response": {
+								"data": data
+							}
+						}
+					);
+			})
+			.catch(function (err) {
+				res.json(
+					{
+						"response": {
+							"data": null
+						}
+					}
+				);
+			});
 	});
 
 app.use("/", router);

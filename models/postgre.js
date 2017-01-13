@@ -23,6 +23,7 @@ var pgp = require("pg-promise")(options);
 var connectionString = "postgres://" + config.usr + ":" + config.passwd + "@" + config.host + ":" + config.port + "/" + config.database;
 var db = pgp(connectionString);
 
+// This is just here to test the connection to the PostgreSQL database
 db.one("select now()")
 	.then(function (data) {
 		console.log("data = " + data.now);
