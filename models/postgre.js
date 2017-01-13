@@ -8,15 +8,27 @@
 */
 
 var promise = require("bluebird");
+var fs      = require("fs");
 
 var options = {
-    promiseLib: promise
+	promiseLib: promise
 };
+
+if (fs.existsSync("example.config.json") && !fs.existsSync("config.json")) {
+	console.log("Please rename 'example.config.json' to 'config.json'");
+}
+var config = JSON.parse(fs.readFileSync("config.json", "utf8"));
 
 var pgp = require("pg-promise")(options);
-var connectionString = "postgres://localhost:5432/twenti";
+var connectionString = "postgres://" + config.usr + ":" + config.passwd + "@" + config.host + ":" + config.port + "/" + config.database;
 var db = pgp(connectionString);
 
-module.exports = {
-    
-};
+db.one("select now()")
+	.then(function (data) {
+		console.log("data = " + data.now);
+	})
+	.catch(function (err) {
+		console.log("fuck me dead");
+	});
+
+module.exports = db;
