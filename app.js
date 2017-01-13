@@ -48,29 +48,6 @@ router.route("/users/:name")
 
 router.route("/tracks/:id")
 	.get(function(req, res) {
-		
-		/*
-		res.json(
-			{
-				"tracks": [
-					{
-						id: "3yhg3wqj5",
-						title: "Clarity",
-						description: "",
-						length: 3400,
-						artists: [
-							"Zedd",
-							"Foxes"
-						],
-						statistics: {
-							"playCount": 0,
-							"viewCount": 0,
-						},
-					},
-				]
-			}
-		);
-		*/		
 		res.json({});
 	});
 

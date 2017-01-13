@@ -1,0 +1,21 @@
+// JSON track response
+// /tracks/:id or /tracks/:id,:id
+// Each track is contained in an array under the 'tracks' JSON array
+{
+	"tracks": [
+		{
+    		id: "3yhg3wqj5",
+			title: "Clarity",
+			description: "",
+			length: 3400,
+			artists: [
+				"Zedd",
+				"Foxes"
+			],
+			statistics: {
+			    "playCount": 0,
+			    "viewCount": 0,
+		    },
+	    },
+    ]
+}
