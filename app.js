@@ -7,11 +7,12 @@
 // permission of Lewis Watson and/or Franco Paez
 */
 
-var express		= require("express");
-var app 		= express();
-var bodyParser 	= require("body-parser");
-var port 		= process.env.PORT || 3000;
-var router 		= express.Router();
+var express 		= require("express");
+var app 			= express();
+var bodyParser		= require("body-parser");
+var port 			= process.env.PORT || 3000;
+var router			= express.Router();
+var randomString 	= require("randomstring");
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
