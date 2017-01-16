@@ -13,6 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "async": "^2.1.4",
     "bluebird": "^3.4.7",
     "body-parser": "^1.0.2",
     "express": "~4.0.0",
