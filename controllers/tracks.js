@@ -4,7 +4,7 @@
 // This file is part of Twenti
 //
 // Twenti can not be copied and/or distributed without the express
-// permission of Lewis Watson and/or Franco Paez
+// permission of Lewis Watson and/or Franco Paez and/or Carl Rizk
 */
 
 			// Idea
@@ -27,6 +27,8 @@ var pgp 		= postgre.pgp;
 var qrm 		= pgp.queryResult;
 var async		= require("async");
 var _json 		= require("../helpers/json.js");
+
+const GET_MANY_MAX_TRACKS = 10;
 
 var columns = {
 	"main": ["trackid", "title", "description", "uploaded", "artists"]
@@ -98,8 +100,8 @@ Track.getMany = function(req, res) {
 	// .clean() is from /helpers/array.js and extended the default JavaScript array class
 	var ids = req.params.id.split(",").clean("");
 	// Trim the array to a maximum of tracks
-	if (ids.length > 10) {
-		for (i = ids.length; i >= 10; i--) {
+	if (ids.length > GET_MANY_MAX_TRACKS) {
+		for (i = ids.length; i >= GET_MANY_MAX_TRACKS; i--) {
 			ids.splice(i, 1);
 		}
 	}
