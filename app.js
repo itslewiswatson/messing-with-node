@@ -15,6 +15,9 @@ var router			= express.Router();
 var randomString 	= require("randomstring");
 var tracks			= require("./controllers/tracks.js");
 
+// Helpers
+var _array			= require("./helpers/array.js");
+
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
