@@ -26,10 +26,13 @@ var db = pgp(connectionString);
 // This is just here to test the connection to the PostgreSQL database
 db.one("select now()")
 	.then(function (data) {
-		console.log("data = " + data.now);
+		console.log("Successfully connected to PostgreSQL server");
 	})
 	.catch(function (err) {
-		console.log("fuck me dead");
+		console.log("Could not connect to the PostgreSQL server");
 	});
 
-module.exports = db;
+module.exports = {
+	db: db,
+	pgp: pgp
+}
