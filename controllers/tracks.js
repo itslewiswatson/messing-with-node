@@ -1,9 +1,17 @@
-var db = require("../models/postgre.js");
 var Track = {}
+var postgre = require("../models/postgre.js");
+var db = postgre.db;
+var pgp = postgre.pgp;
+var qrm = pgp.queryResult;
+
+var columns = {
+	"main": ["uniqueid", "title", "description", "artists", "uploaded"],
+	"statistics": [""]
+};
 
 Track.getSingle = function(req, res) {
 	var id = req.params.id;
-	db.one("select * from tracks where uniqueid = $1", id)
+	db.one("select ${columns^} from tracks where uniqueid = ${uniqueid}", {uniqueid: id, columns: columns.main.map(pgp.as.name).join()})
 		.then(function(data) {
 			// Idea
 				// Currently integer fields return as string in the json response
@@ -31,6 +39,7 @@ Track.getSingle = function(req, res) {
 				);
 		})
 		.catch(function(err) {
+			console.log(err);
 			res.json(
 				{
 					"response": {
@@ -44,10 +53,25 @@ Track.getSingle = function(req, res) {
 Track.getMany = function(req, res) {
 	// .clean() is from /helpers/array.js and extended the default JavaScript array class
 	var ids = req.params.id.split(",").clean("");
-	console.log(ids);
+	// Trim the array to a maximum of tracks
+	if (ids.length > 10) {
+		for (i = ids.length; i >= 10; i--) {
+			ids.splice(i, 1);
+		}
+	}
+
+	// START DEBUG
+	//console.log(ids);
+	//console.log(columns.map(pgp.as.name).join());
+	//console.log(pgp.as.format("$1^", pgp.as.csv(ids)));
+	// END DEBUG
 
 	// https://github.com/vitaly-t/pg-promise/wiki/Learn-by-Example#where-col-in-values
-	db.any("select * from tracks where uniqueid in ($1:csv)", [ids])
+	// https://github.com/vitaly-t/pg-promise/issues/267
+	//db.query("select ${columns^} from tracks where uniqueid in (" + pgp.as.format("$1^", pgp.as.csv(ids)) + ")", {columns: columns.map(pgp.as.name).join()}, qrm.any)
+
+	// Main query
+	db.query("select ${columns^} from tracks where uniqueid in (${uniqueids:csv})", {uniqueids: ids, columns: columns.main.map(pgp.as.name).join()}, qrm.any)
 		.then(function(data) {
 			res.json(
 				{
@@ -60,15 +84,18 @@ Track.getMany = function(req, res) {
 			);
 		})
 		.catch(function(err) {
-			//console.log(err);
+			console.log(err);
 			res.json(
 				{
 					"response": {
-						"data": null
+						"data": err
 					}
 				}
 			);
 		});
+
+	// Statistics
+	db.query()
 }
 
 Track.getAll = function(req, res) {
