@@ -193,7 +193,7 @@ Track.getMany = function(req, res) {
 					next();
 				}, function(err) {
 					if (err) {
-						console.log("Could not iterate through Tracks.getMany");
+						console.log("Could not iterate through Tracks.getMany at 'main'");
 						console.log(err);
 					}
 				});
@@ -234,23 +234,29 @@ Track.getMany = function(req, res) {
 				var preResults = []; // Results we already have
 				var toFetch = []; // Ones that need to be fetched
 
-				// Cannot use .mget
-				for (i = 0; i < ids.length; i++) {
-					__cache.get("track:" + ids[i] + ".stats", function (err, value) {
+				async.eachSeries(ids, function(key, next) {
+					// Cannot use .mget
+					__cache.get("track:" + key + ".stats", function (err, value) {
 						if (err) {
-							toFetch.push(ids[i]);
+							toFetch.push(key);
 						}
 						else {
 							preResults.push(
 								{
-									trackid: ids[i],
+									trackid: key,
 									plays: value.plays,
 									views: value.views
 								}
 							);
 						}
 					});
-				}
+					next();
+				}, function(err) {
+					if (err) {
+						console.log("Could not iterate through Tracks.getMany at 'stats'");
+						console.log(err);
+					}
+				});
 
 				//console.log("toFetch.length : " + toFetch.length);
 				if (toFetch.length > 0) {
@@ -351,7 +357,6 @@ Track.getMany = function(req, res) {
 			});
 
 			tracksArray[i].stats = newstats[tracksArray[i].trackid];
-			//console.log(newstats);
 		}
 
 		// Response
