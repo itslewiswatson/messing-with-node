@@ -27,6 +27,7 @@ var pgp 		= postgre.pgp;
 var qrm 		= pgp.queryResult;
 var async		= require("async");
 var _json 		= require("../helpers/json.js");
+var __cache 	= require("../models/cache.js");
 
 // Constants
 const GET_MANY_MAX_TRACKS = 10;
@@ -42,36 +43,51 @@ Track.getSingle = function(req, res) {
 	async.parallel({
 		main: function(callback) {
 			setTimeout(function () {
-				db.one("select ${columns^} from tracks where trackid = ${trackid}", {trackid: id, columns: columns.main.map(pgp.as.name).join()})
-					.then(function(data) {
-						callback(null, data);
-					})
-					.catch(function(err) {
-						callback(err, null);
-					})
+				// See if we can retrive it from the cache
+				// Tracks use 'track:id.type' syntax in the cache, where type is 'main', 'plays' or 'views'
+				__cache.get("track:" + id + ".main", function(err, value) {
+					if (err) {
+						db.one("select ${columns^} from tracks where trackid = ${trackid}", {trackid: id, columns: columns.main.map(pgp.as.name).join()})
+							.then(function(data) {
+								callback(null, data);
+							})
+							.catch(function(err) {
+								callback(err, null);
+							})
+					}
+					else {
+						callback(null, value);
+					}
+				});
 			});
 		},
-		plays: function(callback) {
+		stats: function(callback) {
 			setTimeout(function () {
-				db.one("select coalesce(count(*), 0) as plays from tracks__plays where trackid = ${trackid}", {trackid: id})
-					.then(function(data) {
-						callback(null, data);
-					})
-					.catch(function(err) {
-						callback(err, null);
-					})
-			});
-		},
-		views: function(callback) {
-			setTimeout(function () {
-				// Must change this to some other sort of table
-				db.one("select coalesce(count(*), 0) as views from tracks__plays where trackid = ${trackid}", {trackid: id})
-					.then(function(data) {
-						callback(null, data);
-					})
-					.catch(function(err) {
-						callback(err, null);
-					})
+				__cache.get("track:" + id + ".stats", function (err, value) {
+					if (err) {
+						db.one(
+							"SELECT (" + 
+								"SELECT COALESCE(COUNT(*), 0) " + 
+								"FROM tracks__plays " +
+								"WHERE trackid = ${trackid} " +
+							") AS plays, " +
+							"(" +
+								"SELECT COALESCE(COUNT(*), 0) " + 
+								"FROM tracks__plays " +
+								"WHERE trackid = ${trackid} " +
+							") AS views", {trackid: id}
+						)
+							.then(function(data) {
+								callback(null, data);
+							})
+							.catch(function(err) {
+								callback(err, null);
+							})
+					}
+					else {
+						callback(null, value);
+					}
+				})
 			});
 		}
 	},
@@ -81,15 +97,38 @@ Track.getSingle = function(req, res) {
 			return;
 		}
 
-		// Needed to merge statistics into the main array
-		results.stats = {"statistics": _json.extend({}, results.views, results.plays)};
+		// Cache the track data if it's not already cached
+		__cache.get("track:" + id + ".main", function(_err, value) {
+			if (_err) {
+				__cache.set("track:" + id + ".main", results.main, function(err, success) {
+					if (err) {
+						console.log("Error setting cache for: " + "track:" + id + ".main");
+					}
+					else {
+						console.log("Cached: " + "track:" + id + ".main");
+					}
+				});
+			}
+		});
+		__cache.get("track:" + id + ".stats", function(_err, value) {
+			if (_err) {
+				__cache.set("track:" + id + ".stats", results.stats, function(err, success) {
+					if (err) {
+						console.log("Error setting cache for: " + "track:" + id + ".stats");
+					}
+					else {
+						console.log("Cached: " + "track:" + id + ".stats");
+					}
+				});
+			}
+		});
 
 		res.json(
 			{
 				"response": {
 					"data": {
 						"tracks": [
-							_json.extend({}, results.main, results.stats)
+							_json.extend({}, results.main, {"stats": results.stats}) // Should make this async and perform it somewhere else
 						]
 					}
 				}
