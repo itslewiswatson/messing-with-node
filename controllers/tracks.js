@@ -32,10 +32,23 @@ var __cache 	= require("../models/cache.js");
 // Constants
 const GET_MANY_MAX_TRACKS = 10;
 const GET_MANY_SEPARATOR = ",";
+const CACHE_STATS_TTL = 600; // 300s = 5m (stats should update more often)
 
 var columns = {
 	"main": ["trackid", "title", "description", "uploaded", "artists"]
 };
+
+// Temporary workaround
+reverseStats = function (a) {
+	q = [];
+	for (var k in a) {
+		if (a.hasOwnProperty(k)) {
+			q.push({trackid: k, plays: a[k].plays, views: a[k].views});
+		}
+	}
+	return q;
+}
+
 
 Track.getSingle = function(req, res) {
 	var id = req.params.id;
@@ -72,12 +85,12 @@ Track.getSingle = function(req, res) {
 							"SELECT (" + 
 								"SELECT COALESCE(COUNT(*), 0) " + 
 								"FROM tracks__plays " +
-								"WHERE trackid = ${trackid} " +
+								"WHERE trackid = ${trackid}" +
 							") AS plays, " +
 							"(" +
 								"SELECT COALESCE(COUNT(*), 0) " + 
 								"FROM tracks__plays " +
-								"WHERE trackid = ${trackid} " +
+								"WHERE trackid = ${trackid}" +
 							") AS views", {trackid: id}
 						)
 							.then(function(data) {
@@ -116,7 +129,9 @@ Track.getSingle = function(req, res) {
 		});
 		__cache.get("track:" + id + ".stats", function(_err, value) {
 			if (_err) {
-				__cache.set("track:" + id + ".stats", results.stats, function(err, success) {
+				//console.log("results.stats for Track.getSingle: " + results.stats);
+				//console.log(results.stats);
+				__cache.set("track:" + id + ".stats", results.stats, CACHE_STATS_TTL, function(err, success) {
 					if (err) {
 						console.log("Error setting cache for: " + "track:" + id + ".stats");
 					}
@@ -164,20 +179,27 @@ Track.getMany = function(req, res) {
 				var preResults = []; // Results we already have
 				var toFetch = []; // Ones that need to be fetched
 
-				// Cannot use .mget
-				for (i = 0; i < ids.length; i++) {
-					__cache.get("track:" + ids[i] + ".main", function (err, value) {
+				// This is the same as a normal for-loop
+				async.eachSeries(ids, function(key, next) {
+					// Cannot use .mget
+					__cache.get("track:" + key + ".main", function (err, value) {
 						if (err) {
-							toFetch.push(ids[i]);
+							toFetch.push(key);
 						}
 						else {
 							preResults.push(value);
 						}
 					});
-				}
+					next();
+				}, function(err) {
+					if (err) {
+						console.log("Could not iterate through Tracks.getMany");
+						console.log(err);
+					}
+				});
 
 				if (toFetch.length > 0) {
-					db.query("select ${columns^} from tracks where trackid in (${trackid:csv})", {trackid: toFetch, columns: columns.main.map(pgp.as.name).join()}, qrm.many)
+					db.query("select ${columns^} from tracks where trackid in (${trackid:csv}) limit ${maxTracks}", {trackid: toFetch, maxTracks: GET_MANY_MAX_TRACKS, columns: columns.main.map(pgp.as.name).join()}, qrm.many)
 						.then(function(data) {
 							// We need to push each as an object and not as an array
 							/*
@@ -204,12 +226,71 @@ Track.getMany = function(req, res) {
 					callback(null, preResults);
 				}
 			});
-		}/*,
+		},
 		stats: function(callback) {
 			setTimeout(function () {
+				// The aim in this function is to send all the results at once
+
+				var preResults = []; // Results we already have
+				var toFetch = []; // Ones that need to be fetched
+
+				// Cannot use .mget
+				for (i = 0; i < ids.length; i++) {
+					__cache.get("track:" + ids[i] + ".stats", function (err, value) {
+						if (err) {
+							toFetch.push(ids[i]);
+						}
+						else {
+							preResults.push(
+								{
+									trackid: ids[i],
+									plays: value.plays,
+									views: value.views
+								}
+							);
+						}
+					});
+				}
+
+				//console.log("toFetch.length : " + toFetch.length);
+				if (toFetch.length > 0) {
+					db.query("SELECT A.trackid, " +
+						"(SELECT COALESCE(COUNT(*), 0) FROM tracks__plays C WHERE C.trackid = A.trackid AND C.trackid = B.trackid) AS plays, " +
+						"(SELECT COALESCE(COUNT(*), 0) FROM tracks__views D WHERE D.trackid = A.trackid AND D.trackid = B.trackid) AS views " +
+						"FROM tracks__plays A, tracks__views B " +
+						"WHERE A.trackid = B.trackid " +
+						"AND A.trackid IN (${trackids:csv}) " +
+						"GROUP BY A.trackid, B.trackid",
+					{trackids: toFetch}, qrm.many)
+						.then(function(data) {
+							// We need to push each as an object and not as an array
+							//
+							//	example:
+							//		[{"trackid": ...}] -> is not okay
+							//		{"trackid": ...} -> is okay
+							//
+							if (data.length > 1) {
+								for (i = 0; i < data.length; i++) {
+									preResults.push(data[i]);
+								}
+							}
+							else {
+								preResults.push(data[0]);
+							}
+							callback(null, preResults);
+						})
+						.catch(function(err) {
+							callback(err, null);
+						});
+				}
+				else {
+					// All cached data has been pushed to preResults and we don't need to worry about fetching anything - just send it
+					// However, it nests itself in another array, so just send preResults[0]
+					//console.log(preResults[0]);
+					callback(null, preResults);
+				}
 			});
 		}
-		*/
 	},
 	function(err, results) {
 		if (err) {
@@ -217,26 +298,63 @@ Track.getMany = function(req, res) {
 			return;
 		}
 
+		var newstats = {}
+		for (k = 0; k < results.stats.length; k++) {
+			newstats[results.stats[k].trackid] = {"plays": results.stats[k].plays, "views": results.stats[k].views}
+		}
+		console.log(results.stats);
+
 		var tracksArray = results.main;
+
 		for (i = 0; i < tracksArray.length; i++) {
-			if (tracksArray[i].trackid == undefined) {
-				console.log(tracksArray);
-			}
-			console.log("Going through " + tracksArray[i].trackid);
+			// Cache .main (if needed) for tracks returned from results
 			__cache.get("track:" + tracksArray[i].trackid + ".main", function(_err, value) {
 				if (_err) {
+					if (tracksArray[i].stats) {
+						console.log("TERMINATE NOW");
+					}
 					__cache.set("track:" + tracksArray[i].trackid + ".main", tracksArray[i], function (err, success) {
 						if (err) {
-							console.log("Failed to update cache for " + tracksArray[i].trackid);
+							//console.log("Failed to update cache for " + tracksArray[i].trackid);
 						}
 						else {
-							console.log("Added cache for " + tracksArray[i].trackid);
+							//console.log("Added main cache for " + tracksArray[i].trackid);
 						}
 					});
 				}
 			});
+
+			// Cache .stats (if needed) for tracks returned from results
+			__cache.get("track:" + tracksArray[i].trackid + ".stats", function(_err, value) {
+				if (_err) {
+
+					// This bit is fucking atrocious and I need to fix it
+					var stats = reverseStats(newstats);
+					var trackStats;
+					for (k = 0; k < stats.length; k++) {
+						if (stats[k].trackid == tracksArray[i].trackid) {
+							trackStats = {"plays": stats[k].plays, "views": stats[k].views};
+							break;
+						}
+					}
+					// End the fucking atrocious bit
+
+					__cache.set("track:" + tracksArray[i].trackid + ".stats", trackStats, CACHE_STATS_TTL, function (err, success) {
+						if (err) {
+							//console.log("Failed to update cache for " + tracksArray[i].trackid);
+						}
+						else {
+							//console.log("Added stats cache for " + tracksArray[i].trackid);
+						}
+					});
+				}
+			});
+
+			tracksArray[i].stats = newstats[tracksArray[i].trackid];
+			//console.log(newstats);
 		}
 
+		// Response
 		res.json(
 			{
 				"response": {
