@@ -38,18 +38,6 @@ var columns = {
 	"main": ["trackid", "title", "description", "uploaded", "artists"]
 };
 
-// Temporary workaround
-reverseStats = function (a) {
-	q = [];
-	for (var k in a) {
-		if (a.hasOwnProperty(k)) {
-			q.push({trackid: k, plays: a[k].plays, views: a[k].views});
-		}
-	}
-	return q;
-}
-
-
 Track.getSingle = function(req, res) {
 	var id = req.params.id;
 
@@ -308,7 +296,6 @@ Track.getMany = function(req, res) {
 		for (k = 0; k < results.stats.length; k++) {
 			newstats[results.stats[k].trackid] = {"plays": results.stats[k].plays, "views": results.stats[k].views}
 		}
-		console.log(results.stats);
 
 		var tracksArray = results.main;
 
@@ -319,7 +306,7 @@ Track.getMany = function(req, res) {
 					if (tracksArray[i].stats) {
 						console.log("TERMINATE NOW");
 					}
-					__cache.set("track:" + tracksArray[i].trackid + ".main", tracksArray[i], function (err, success) {
+					__cache.set("track:" + tracksArray[i].trackid + ".main", tracksArray[i], function(err, success) {
 						if (err) {
 							//console.log("Failed to update cache for " + tracksArray[i].trackid);
 						}
@@ -333,19 +320,8 @@ Track.getMany = function(req, res) {
 			// Cache .stats (if needed) for tracks returned from results
 			__cache.get("track:" + tracksArray[i].trackid + ".stats", function(_err, value) {
 				if (_err) {
-
-					// This bit is fucking atrocious and I need to fix it
-					var stats = reverseStats(newstats);
-					var trackStats;
-					for (k = 0; k < stats.length; k++) {
-						if (stats[k].trackid == tracksArray[i].trackid) {
-							trackStats = {"plays": stats[k].plays, "views": stats[k].views};
-							break;
-						}
-					}
-					// End the fucking atrocious bit
-
-					__cache.set("track:" + tracksArray[i].trackid + ".stats", trackStats, CACHE_STATS_TTL, function (err, success) {
+					var trackStats = newstats[tracksArray[i].trackid];
+					__cache.set("track:" + tracksArray[i].trackid + ".stats", trackStats, CACHE_STATS_TTL, function(err, success) {
 						if (err) {
 							//console.log("Failed to update cache for " + tracksArray[i].trackid);
 						}
