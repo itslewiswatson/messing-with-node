@@ -28,7 +28,9 @@ var qrm 		= pgp.queryResult;
 var async		= require("async");
 var _json 		= require("../helpers/json.js");
 
+// Constants
 const GET_MANY_MAX_TRACKS = 10;
+const GET_MANY_SEPARATOR = ",";
 
 var columns = {
 	"main": ["trackid", "title", "description", "uploaded", "artists"]
@@ -98,7 +100,7 @@ Track.getSingle = function(req, res) {
 
 Track.getMany = function(req, res) {
 	// .clean() is from /helpers/array.js and extended the default JavaScript array class
-	var ids = req.params.id.split(",").clean("");
+	var ids = req.params.id.split(GET_MANY_SEPARATOR).clean("");
 	// Trim the array to a maximum of tracks
 	if (ids.length > GET_MANY_MAX_TRACKS) {
 		for (i = ids.length; i >= GET_MANY_MAX_TRACKS; i--) {

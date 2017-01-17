@@ -18,6 +18,9 @@ var tracks			= require("./controllers/tracks.js");
 // Helpers
 var _array			= require("./helpers/array.js");
 
+// Constants
+const GET_MANY_SEPARATOR = ",";
+
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
@@ -68,7 +71,7 @@ router.route("/tracks")
 router.route("/tracks/:id")
 	.get(function(req, res) {
 		var ids = req.params.id;
-		var split = ids.split(",");
+		var split = ids.split(GET_MANY_SEPARATOR);
 		if (split && split.length && split.length > 1) {
 			tracks.getMany(req, res);
 		}
