@@ -14,11 +14,11 @@
   "description": "",
   "dependencies": {
     "async": "^2.1.4",
+    "base64url": "^2.0.0",
     "bluebird": "^3.4.7",
     "body-parser": "^1.0.2",
     "express": "~4.0.0",
     "node-cache": "^4.1.1",
-    "pg-promise": "^5.5.1",
-    "randomstring": "^1.1.5"
+    "pg-promise": "^5.5.1"
   }
 }
