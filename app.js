@@ -12,8 +12,9 @@ var app 			= express();
 var bodyParser		= require("body-parser");
 var port 			= process.env.PORT || 3000;
 var router			= express.Router();
-var randomString 	= require("randomstring");
+var base64url 		= require("base64url");
 var tracks			= require("./controllers/tracks.js");
+var genres			= require("./controllers/genres.js");
 
 // Helpers
 var _array			= require("./helpers/array.js");
@@ -30,9 +31,17 @@ router.use(function(req, res, next) {
 	next();
 });
 
-router.get("/", function (req, res) {
+router.get("/", function(req, res) {
 	res.json({message: "api.twenti.co"});
 });
+
+router.route("/genres")
+	.get(genres.getAll);
+
+router.route("/genres/:id")
+	.get(function(req, res) {
+		res.json({message: "api.twenti.co"});
+	});
 
 router.route("/users")
 	.post(function(req, res) {
