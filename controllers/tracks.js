@@ -7,19 +7,6 @@
 // permission of Lewis Watson and/or Franco Paez
 */
 
-			// Idea
-				// Currently integer fields return as string in the json response
-				// Loop through all fields
-				// Check if parseInt(field) returns a number
-				// If it does, set the field's value to parseInt of it's value
-				/*
-					if (parseInt(field)) {
-						field = parseInt(field);
-					}
-				*/
-				// Should see if it's able to be made into a one-liner
-			// eg: data.uploaded = parseInt(data.uploaded);
-
 var Track 		= {}
 var postgre 	= require("../models/postgre.js");
 var db			= postgre.db;
