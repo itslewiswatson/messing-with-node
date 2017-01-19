@@ -21,9 +21,7 @@ const GET_MANY_MAX_TRACKS = 10;
 const GET_MANY_SEPARATOR = ",";
 const CACHE_STATS_TTL = 600; // 300s = 5m (stats should update more often)
 
-var columns = {
-	"main": ["trackid", "title", "description", "uploaded", "artists"]
-};
+var columns = ["trackid", "title", "description", "uploaded", "artists", "tags"];
 
 Track.getSingle = function(req, res) {
 	var id = req.params.id;
@@ -36,7 +34,7 @@ Track.getSingle = function(req, res) {
 				__cache.get("track:" + id + ".main", function(err, value) {
 					if (err) {
 						//console.log("Could not get cache for .main");
-						db.one("select ${columns^} from tracks where trackid = ${trackid}", {trackid: id, columns: columns.main.map(pgp.as.name).join()})
+						db.one("SELECT ${fields^} FROM tracks WHERE trackid = ${trackid}", {trackid: id, fields: columns.join()})
 							.then(function(data) {
 								callback(null, data);
 							})
@@ -53,7 +51,7 @@ Track.getSingle = function(req, res) {
 		},
 		stats: function(callback) {
 			setTimeout(function () {
-				__cache.get("track:" + id + ".stats", function (err, value) {
+				__cache.get("track:" + id + ".stats", function(err, value) {
 					if (err) {
 						//console.log("Could not get cache for .stats");
 						db.one(
@@ -81,7 +79,22 @@ Track.getSingle = function(req, res) {
 					}
 				})
 			});
+		},
+		/*
+		artists: function(callback) {
+			setTimeout(function () {
+				__cache.get("track:" + id + ".artists", function(err, value) {
+					if (err) {
+						db.any("SELECT ")
+					}
+					else {
+
+					}
+				});
+			});
+			
 		}
+		*/
 	},
 	function(err, results) {
 		if (err) {
@@ -174,7 +187,7 @@ Track.getMany = function(req, res) {
 				});
 
 				if (toFetch.length > 0) {
-					db.query("select ${columns^} from tracks where trackid in (${trackid:csv}) limit ${maxTracks}", {trackid: toFetch, maxTracks: GET_MANY_MAX_TRACKS, columns: columns.main.map(pgp.as.name).join()}, qrm.many)
+					db.query("SELECT ${fields^} FROM tracks WHERE trackid IN (${trackid:csv}) LIMIT ${maxTracks}", {trackid: toFetch, maxTracks: GET_MANY_MAX_TRACKS, fields: columns.join()}, qrm.many)
 						.then(function(data) {
 							// We need to push each as an object and not as an array
 							/*
@@ -182,14 +195,11 @@ Track.getMany = function(req, res) {
 									[{"trackid": ...}] -> is not okay
 									{"trackid": ...} -> is okay
 							*/
-							if (data.length > 1) {
-								for (i = 0; i < data.length; i++) {
-									preResults.push(data[i]);
-								}
-							}
-							else {
-								preResults.push(data[0]);
-							}
+
+							// Spread operator
+							// Splits the data array into different variables, to be used as arguments
+							// https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Operators/Spread_operator
+							preResults.push(...data);
 							callback(null, preResults);
 						})
 						.catch(function(err) {
@@ -250,14 +260,11 @@ Track.getMany = function(req, res) {
 							//		[{"trackid": ...}] -> is not okay
 							//		{"trackid": ...} -> is okay
 							//
-							if (data.length > 1) {
-								for (i = 0; i < data.length; i++) {
-									preResults.push(data[i]);
-								}
-							}
-							else {
-								preResults.push(data[0]);
-							}
+
+							// Spread operator
+							// Splits the data array into different variables, to be used as arguments
+							// https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Operators/Spread_operator
+							preResults.push(...data);
 							callback(null, preResults);
 						})
 						.catch(function(err) {
