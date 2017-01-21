@@ -99,7 +99,8 @@ Track.getSingle = function(req, res) {
 	},
 	function(err, results) {
 		if (err) {
-			res.json({message: "error"});
+			res.json({message: "error", detail: err});
+			console.log(err);
 			return;
 		}
 
@@ -189,7 +190,7 @@ Track.getMany = function(req, res) {
 				});
 
 				if (toFetch.length > 0) {
-					db.query("SELECT ${fields^} FROM tracks WHERE trackid IN (${trackid:csv}) LIMIT ${maxTracks}", {trackid: toFetch, maxTracks: GET_MANY_MAX_TRACKS, fields: columns.join()}, qrm.many)
+					db.manyOrNone("SELECT ${fields^} FROM tracks WHERE trackid IN (${trackid:csv}) LIMIT ${maxTracks}", {trackid: toFetch, maxTracks: GET_MANY_MAX_TRACKS, fields: columns.join()})
 						.then(function(data) {
 							// We need to push each as an object and not as an array
 							/*
@@ -247,14 +248,14 @@ Track.getMany = function(req, res) {
 
 				//console.log("toFetch.length : " + toFetch.length);
 				if (toFetch.length > 0) {
-					db.query("SELECT A.trackid, " +
+					db.manyOrNone("SELECT A.trackid, " +
 						"(SELECT COALESCE(COUNT(*), 0) FROM tracks__plays C WHERE C.trackid = A.trackid AND C.trackid = B.trackid) AS plays, " +
 						"(SELECT COALESCE(COUNT(*), 0) FROM tracks__views D WHERE D.trackid = A.trackid AND D.trackid = B.trackid) AS views " +
 						"FROM tracks__plays A, tracks__views B " +
 						"WHERE A.trackid = B.trackid " +
 						"AND A.trackid IN (${trackids:csv}) " +
 						"GROUP BY A.trackid, B.trackid",
-					{trackids: toFetch}, qrm.many)
+					{trackids: toFetch})
 						.then(function(data) {
 							// We need to push each as an object and not as an array
 							//
@@ -284,7 +285,8 @@ Track.getMany = function(req, res) {
 	},
 	function(err, results) {
 		if (err) {
-			res.json({message: "error"});
+			res.json({message: "error", detail: err});
+			console.log(err);
 			return;
 		}
 
