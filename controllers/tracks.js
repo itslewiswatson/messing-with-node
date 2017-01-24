@@ -31,7 +31,7 @@ Track.getSingle = function(req, res) {
 		main: function(callback) {
 			setTimeout(function () {
 				// See if we can retrive it from the cache
-				// Tracks use 'track:id.type' syntax in the cache, where type is 'main', 'plays' or 'views'
+				// Tracks use 'track:id.type' syntax in the cache, where type is 'main' or 'stats'
 				__cache.get("track:" + id + ".main", function(err, value) {
 					if (err) {
 						//console.log("Could not get cache for .main");
