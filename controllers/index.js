@@ -9,16 +9,15 @@
 
 var express = require("express");
 var router = express.Router();
-var __cache = require("../models/cache.js");
 
-router.route("/genres")
+// Include all other routes here
+router.use(require("./genres.js"));
+router.use(require("./tracks.js"));
+router.use(require("./users.js"));
+
+router.route("/")
 	.get(function(req, res, next) {
 		res.json({message: "api.twenti.co"});
-	});
-
-router.route("/genres/:id")
-	.get(function(req, res) {
-		res.json({message: "api.twenti.co"});
-	});
+	})
 
 module.exports = router;

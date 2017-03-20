@@ -12,17 +12,6 @@ var app 			= express();
 var bodyParser		= require("body-parser");
 var port 			= process.env.PORT || 3000;
 var router			= express.Router();
-var base64url 		= require("base64url");
-var tracks			= require("./controllers/tracks.js");
-var users 			= require("./controllers/users.js");
-var genres			= require("./controllers/genres.js");
-var client 			= require("./models/cassandra.js");
-
-// Helpers
-var _array			= require("./helpers/array.js");
-
-// Constants
-const GET_MANY_SEPARATOR = ",";
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
@@ -33,80 +22,11 @@ router.use(function(req, res, next) {
 	next();
 });
 
-router.get("/", function(req, res) {
-	res.json({message: "api.twenti.co"});
-});
-
-/*	GENRES	*/
-
-router.route("/genres")
-	.get(genres.getAll);
-
-router.route("/genres/:id")
-	.get(function(req, res) {
-		res.json({message: "api.twenti.co"});
-	});
-
-/*	USERS	*/
-
-router.route("/users")
-	.post(function(req, res) {
-		res.json(
-			{
-				"response": {
-					"data": null
-				}
-			}
-		);
-	})
-	.get(function(req, res) {
-		res.json(
-			{
-				message: "get"
-			}
-		);
-	})
-	.put(function(req, res) {
-		res.json({message: "put"});
-	})
-	.delete(function(req, res) {
-		res.json({message: "delete"});
-	});
-
-router.route("/users/:id")
-	.get(function(req, res) {
-		var ids = req.params.id;
-		var split = ids.split(GET_MANY_SEPARATOR);
-		if (split && split.length && split.length > 1) {
-			users.getMany(req, res);
-		}
-		else {
-			users.getSingle(req, res);
-		}
-	});
-
-/*	TRACKS	*/
-
-router.route("/tracks")
-	.get(function(req, res) {
-		res.json({message: "get"});
-	});
-
-router.route("/tracks/:id")
-	.get(function(req, res) {
-		var ids = req.params.id;
-		var split = ids.split(GET_MANY_SEPARATOR);
-		if (split && split.length && split.length > 1) {
-			tracks.getMany(req, res);
-		}
-		else {
-			tracks.getSingle(req, res);
-		}
-	});
-
-/*	DEFAULT	*/
+router.use(require("./controllers"));
+//router.use(require("./middlewares"));
 
 app.use("/", router);
+
 app.listen(port, function () {
 	console.log("Ready to accept API requests on port " + port);
 });
