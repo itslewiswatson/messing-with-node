@@ -22,10 +22,10 @@ router.route("/tracks/:id")
 		var ids = req.params.id;
 		var split = ids.split(GET_MANY_SEPARATOR);
 		if (split && split.length && split.length > 1) {
-			tracks.getMany(req, res);
+			res.json({message: "get"});
 		}
 		else {
-			tracks.getSingle(req, res);
+			res.json({message: "get"});
 		}
 	});
 

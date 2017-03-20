@@ -41,10 +41,10 @@ router.route("/users/:id")
 		var ids = req.params.id;
 		var split = ids.split(GET_MANY_SEPARATOR);
 		if (split && split.length && split.length > 1) {
-			users.getMany(req, res);
+			res.json({message: "get"});
 		}
 		else {
-			users.getSingle(req, res);
+			res.json({message: "get"});
 		}
 	});
 
