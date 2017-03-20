@@ -1,7 +1,9 @@
 {
-	"host": "localhost",
-	"port": 5432,
-	"usr": "postgres",
-	"passwd": "",
-	"database": "twenti"
+    "hosts": [
+		"node1.db.twenti.co",
+		"node2.db.twenti.co"
+	],
+    "usr": "cassandra",
+    "passwd": "password",
+    "keyspace": "twentidev"
 }

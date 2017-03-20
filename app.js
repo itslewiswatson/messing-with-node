@@ -16,6 +16,7 @@ var base64url 		= require("base64url");
 var tracks			= require("./controllers/tracks.js");
 var users 			= require("./controllers/users.js");
 var genres			= require("./controllers/genres.js");
+var client 			= require("./models/cassandra.js");
 
 // Helpers
 var _array			= require("./helpers/array.js");

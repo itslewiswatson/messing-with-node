@@ -7,6 +7,7 @@
 // permission of Lewis Watson and/or Franco Paez
 */
 
+/*
 var promise = require("bluebird");
 var fs      = require("fs");
 
@@ -36,3 +37,4 @@ module.exports = {
 	db: db,
 	pgp: pgp
 }
+*/
