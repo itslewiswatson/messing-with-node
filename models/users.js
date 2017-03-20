@@ -8,8 +8,6 @@
 */
 
 var User = {}
-var postgre 	= require("../models/postgre.js");
-var db			= postgre.db;
 var async		= require("async");
 var _json 		= require("../helpers/json.js");
 var __cache 	= require("../models/cache.js");

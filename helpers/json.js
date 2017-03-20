@@ -7,7 +7,7 @@
 // permission of Lewis Watson and/or Franco Paez
 */
 
-function extend(target) {
+module.exports.extend = function(target) {
     var sources = [].slice.call(arguments, 1);
     sources.forEach(function (source) {
         for (var prop in source) {
@@ -15,8 +15,4 @@ function extend(target) {
         }
     });
     return target;
-}
-
-module.exports = {
-	extend: extend
 }

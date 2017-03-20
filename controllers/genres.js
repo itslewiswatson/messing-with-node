@@ -9,7 +9,6 @@
 
 var express = require("express");
 var router = express.Router();
-var __cache = require("../models/cache.js");
 
 router.route("/genres")
 	.get(function(req, res, next) {

@@ -7,10 +7,6 @@
 // permission of Lewis Watson and/or Franco Paez
 */
 
-exports.math = {}
-
-exports.math.round = function(value, decimals) {
+module.exports.math.round = function(value, decimals) {
 	return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
 }
-
-console.log(exports.math.round(55.6666, 2));

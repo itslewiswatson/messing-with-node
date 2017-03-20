@@ -8,9 +8,6 @@
 */
 
 var Track 		= {}
-var postgre 	= require("../models/postgre.js");
-var db			= postgre.db;
-var pgp 		= postgre.pgp;
 //var qrm 		= pgp.queryResult;
 var async		= require("async");
 var _json 		= require("../helpers/json.js");
