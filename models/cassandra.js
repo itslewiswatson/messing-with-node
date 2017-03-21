@@ -22,4 +22,13 @@ client.connect(function (err) {
 	console.log("Connected to cluster with %d host(s): %j", client.hosts.length, client.hosts.keys());
 });
 
+// Precautionary exit methods to avoid a clusterfuck of connection/query errors
+process.on("exit", function() {
+	client.shutdown();
+});
+
+process.on("SIGINT", function() {
+	client.shutdown();
+});
+
 module.exports = client;
