@@ -12,6 +12,7 @@ var app 			= express();
 var bodyParser		= require("body-parser");
 var port 			= process.env.PORT || 3000;
 var router			= express.Router();
+var cassandra 		= require("./models/cassandra.js");
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
