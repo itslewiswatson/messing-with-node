@@ -16,7 +16,7 @@ if (!fs.existsSync("config.json")) {
 }
 var config = JSON.parse(fs.readFileSync("config.json", "utf8"));
 
-const client = new cassandra.Client({contactPoints: config.hosts, authProvider: new PlainTextAuthProvider(config.usr, config.passwd)});
+const client = new cassandra.Client({contactPoints: config.hosts, keyspace: config.keyspace, authProvider: new PlainTextAuthProvider(config.usr, config.passwd)});
 client.connect(function (err) {
 	if (err) return console.error(err);
 	console.log("Connected to cluster with %d host(s): %j", client.hosts.length, client.hosts.keys());
