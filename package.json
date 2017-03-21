@@ -1,16 +1,17 @@
 {
-  "name": "twenti.co",
-  "version": "0.0.2",
+  "name": "api.twenti.co",
+  "version": "0.0.3",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "gitlab.com/nokizorque/twenti.co"
+    "url": "gitlab.com/nokizorque/api.twenti.co"
   },
   "author": "nokizorque",
-  "license": "ISC",
+  "private": true,
+  "license": "LicenseRef-LICENSE",
   "description": "",
   "dependencies": {
     "async": "^2.1.4",
